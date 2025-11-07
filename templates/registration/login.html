@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block sidebar %}{% endblock %}
+
+{% block content %}
+<section class="card" style="max-width:420px; margin:2rem auto;">
+    <h1 style="margin-top:0;">Login</h1>
+    <form method="post">
+        {% csrf_token %}
+        <div style="margin-bottom:1rem;">
+            <label for="id_username">Username</label>
+            <input type="text" name="username" autofocus required id="id_username" class="form-control" />
+        </div>
+        <div style="margin-bottom:1rem;">
+            <label for="id_password">Password</label>
+            <input type="password" name="password" required id="id_password" class="form-control" />
+        </div>
+        <button type="submit" class="btn">Sign in</button>
+    </form>
+    <p style="margin-top:1rem;">Don't have an account? <a href="{% url 'accounts:signup' %}">Sign up</a>.</p>
+</section>
+{% endblock %}
+

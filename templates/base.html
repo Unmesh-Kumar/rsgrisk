@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}ESG Risk Dashboard{% endblock %}</title>
+    <style>
+        :root {
+            color-scheme: light dark;
+            --sidebar-width: 260px;
+            --bg: #f5f6fa;
+            --card-bg: #ffffff;
+            --accent: #004d7a;
+            --accent-light: #e0f0ff;
+            --text-primary: #202124;
+            --text-secondary: #5f6368;
+        }
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--bg);
+            color: var(--text-primary);
+        }
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            background: var(--card-bg);
+            border-bottom: 1px solid #dfe1e5;
+        }
+        header nav a {
+            margin-left: 1rem;
+            font-weight: 500;
+        }
+        .layout {
+            display: flex;
+            min-height: calc(100vh - 64px);
+        }
+        .sidebar {
+            width: var(--sidebar-width);
+            padding: 1.5rem;
+            background: var(--card-bg);
+            border-right: 1px solid #dfe1e5;
+        }
+        .sidebar h2 {
+            margin-top: 0;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08rem;
+            color: var(--text-secondary);
+        }
+        .sidebar ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .sidebar li {
+            margin-bottom: 0.75rem;
+        }
+        .sidebar li a {
+            display: block;
+            padding: 0.6rem 0.75rem;
+            border-radius: 0.5rem;
+            background: var(--accent-light);
+            color: var(--accent);
+        }
+        main {
+            flex: 1;
+            padding: 2rem;
+        }
+        .card {
+            background: var(--card-bg);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 12px 24px -16px rgba(0, 0, 0, 0.2);
+            margin-bottom: 1.5rem;
+        }
+        .form-control {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            border: 1px solid #dfe1e5;
+            border-radius: 0.75rem;
+        }
+        .btn {
+            display: inline-block;
+            padding: 0.75rem 1.4rem;
+            font-weight: 600;
+            border-radius: 0.75rem;
+            border: none;
+            background: var(--accent);
+            color: #fff;
+            cursor: pointer;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        table th,
+        table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e0e0e0;
+            text-align: left;
+            vertical-align: top;
+        }
+        .score-badge {
+            display: inline-block;
+            min-width: 2.5rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 0.5rem;
+            background: rgba(0, 77, 122, 0.1);
+            color: var(--accent);
+            font-weight: 600;
+            text-align: center;
+        }
+        .messages {
+            margin-bottom: 1rem;
+        }
+        .messages .message {
+            margin-bottom: 0.5rem;
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+        }
+        .messages .error {
+            background: #fdecea;
+            color: #b71c1c;
+        }
+        .messages .success {
+            background: #e8f5e9;
+            color: #1b5e20;
+        }
+        footer {
+            padding: 1rem 1.5rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+        @media (max-width: 960px) {
+            .layout {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                border-right: none;
+                border-bottom: 1px solid #dfe1e5;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="brand"><strong>ESG Risk Insight</strong></div>
+        <nav>
+            {% if user.is_authenticated %}
+                <span>Hi {{ user.username }}!</span>
+                <a href="{% url 'accounts:logout' %}">Logout</a>
+            {% else %}
+                <a href="{% url 'accounts:login' %}">Login</a>
+                <a href="{% url 'accounts:signup' %}">Sign Up</a>
+            {% endif %}
+        </nav>
+    </header>
+
+    <div class="layout">
+        {% block sidebar %}{% endblock %}
+        <main>
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="message {{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    <footer>
+        &copy; {% now "Y" %} ESG Risk Insight
+    </footer>
+</body>
+</html>
+

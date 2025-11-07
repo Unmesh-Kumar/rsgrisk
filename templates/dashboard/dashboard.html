@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}ESG Risk Dashboard{% endblock %}
+
+{% block sidebar %}
+<aside class="sidebar">
+    <h2>Recent companies</h2>
+    {% if recent_searches %}
+        <ul>
+            {% for item in recent_searches %}
+                <li>
+                    <a href="?company={{ item.company_name|urlencode }}">{{ item.company_name }}</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No searches yet. Try fetching a company.</p>
+    {% endif %}
+</aside>
+{% endblock %}
+
+{% block content %}
+<section class="card">
+    <form method="post">
+        {% csrf_token %}
+        {{ form.company_name }}
+        <button type="submit" class="btn" style="margin-top: 1rem;">Fetch ESG Profile</button>
+    </form>
+</section>
+
+{% if result %}
+    <section class="card">
+        <header style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+                <h1 style="margin:0;">{{ result.company|title }}</h1>
+                <p style="margin:0.25rem 0 0; color: var(--text-secondary);">
+                    Generated {{ result.generated_at }}
+                    {% if from_cache %}
+                        &mdash; served from cache
+                    {% endif %}
+                </p>
+            </div>
+            <div>
+                <span class="score-badge" style="font-size:1.2rem; padding:0.4rem 0.9rem;">{{ result.overall_score }}</span>
+                <div style="font-size:0.85rem; color:var(--text-secondary); text-align:center;">Overall ESG score</div>
+            </div>
+        </header>
+        <article style="margin-top:1rem;">
+            <h3 style="margin-top:0;">Company overview</h3>
+            <p style="line-height:1.6;">{{ result.overview }}</p>
+        </article>
+    </section>
+
+    <section class="card">
+        <h2 style="margin-top:0;">Risk items ({{ result.total_items }})</h2>
+        {% if result.items %}
+            <div style="overflow-x:auto;">
+                <table>
+                    <thead>
+                    <tr>
+                        <th style="width:24%;">Title</th>
+                        <th>Description</th>
+                        <th style="width:12%;">Date</th>
+                        <th style="width:12%;">Source</th>
+                        <th style="width:16%;">Scores (E / S / G / Overall)</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for item in result.items %}
+                        <tr>
+                            <td><a href="{{ item.url }}" target="_blank" rel="noopener noreferrer">{{ item.title }}</a></td>
+                            <td>{{ item.description }}</td>
+                            <td>{{ item.date }}</td>
+                            <td>{{ item.source }}</td>
+                            <td>
+                                <span class="score-badge">{{ item.scores.environment }}</span>
+                                <span class="score-badge">{{ item.scores.social }}</span>
+                                <span class="score-badge">{{ item.scores.governance }}</span>
+                                <span class="score-badge" style="background:#e0ffe4; color:#0b8043;">{{ item.scores.overall }}</span>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p>No ESG-specific news items found in the last three months.</p>
+        {% endif %}
+    </section>
+{% endif %}
+{% endblock %}
+

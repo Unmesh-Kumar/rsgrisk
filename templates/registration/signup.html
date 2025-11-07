@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Sign Up{% endblock %}
+
+{% block sidebar %}{% endblock %}
+
+{% block content %}
+<section class="card" style="max-width:420px; margin:2rem auto;">
+    <h1 style="margin-top:0;">Create an account</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        <div style="margin-bottom:1rem;">
+            {{ form.username.label_tag }}
+            {{ form.username }}
+            {{ form.username.errors }}
+        </div>
+        <div style="margin-bottom:1rem;">
+            {{ form.email.label_tag }}
+            {{ form.email }}
+            {{ form.email.errors }}
+        </div>
+        <div style="margin-bottom:1rem;">
+            {{ form.password1.label_tag }}
+            {{ form.password1 }}
+            {{ form.password1.errors }}
+        </div>
+        <div style="margin-bottom:1rem;">
+            {{ form.password2.label_tag }}
+            {{ form.password2 }}
+            {{ form.password2.errors }}
+        </div>
+        <button type="submit" class="btn">Create account</button>
+    </form>
+    <p style="margin-top:1rem;">Already have an account? <a href="{% url 'accounts:login' %}">Log in</a>.</p>
+</section>
+{% endblock %}
+
