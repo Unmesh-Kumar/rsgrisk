@@ -34,7 +34,7 @@
             <div>
                 <h1 style="margin:0;">{{ result.company|title }}</h1>
                 <p style="margin:0.25rem 0 0; color: var(--text-secondary);">
-                    Generated {{ result.generated_at }}
+                    Generated {{ result.generated_at_display }}
                     {% if from_cache %}
                         &mdash; served from cache
                     {% endif %}

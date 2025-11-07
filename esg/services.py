@@ -58,9 +58,11 @@ class ESGService:
         articles = fetch_articles(company_name, limit=self.max_items)
         analysis = self._analyse_articles(company_name, articles)
 
+        now = datetime.utcnow()
         return {
             'company': company_name,
-            'generated_at': isoformat(datetime.utcnow()),
+            'generated_at': isoformat(now),
+            'generated_at_display': now.strftime('%b %d, %Y at %I:%M %p UTC'),
             'overview': overview,
             'overall_score': analysis.get('overall_score', 0),
             'items': analysis.get('items', []),
