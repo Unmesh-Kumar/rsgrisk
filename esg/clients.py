@@ -32,7 +32,7 @@ except ImportError:  # pragma: no cover
 logger = logging.getLogger(__name__)
 
 
-THREE_MONTHS = 90
+LOOKBACK_DAYS = 730
 
 
 def fetch_articles(company_name: str, limit: int = 50) -> List[Dict]:
@@ -53,7 +53,7 @@ def fetch_articles(company_name: str, limit: int = 50) -> List[Dict]:
 
     user_prompt = (
         f"Company: {company_name}\n"
-        f"Time horizon: last {THREE_MONTHS} days.\n"
+        f"Time horizon: last {LOOKBACK_DAYS} days (approx. 2 years).\n"
         f"Relevant ESG keywords: {keywords}.\n"
         "Provide concise descriptions summarising the ESG risk highlighted by each article."
     )

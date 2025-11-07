@@ -52,10 +52,22 @@
     </section>
 
     <section class="card">
-        <h2 style="margin-top:0;">Risk items ({{ result.total_items }})</h2>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1rem;">
+            <h2 style="margin:0;">Risk items ({{ result.total_items }})</h2>
+            <div style="display:flex; gap:0.5rem; align-items:center;">
+                <label for="sortBy" style="font-size:0.9rem; color:var(--text-secondary);">Sort by:</label>
+                <select id="sortBy" class="form-control" style="width:auto; padding:0.5rem;">
+                    <option value="overall">Overall ESG Score</option>
+                    <option value="date">Date</option>
+                    <option value="environment">Environment Score</option>
+                    <option value="social">Social Score</option>
+                    <option value="governance">Governance Score</option>
+                </select>
+            </div>
+        </div>
         {% if result.items %}
             <div style="overflow-x:auto;">
-                <table>
+                <table id="riskTable">
                     <thead>
                     <tr>
                         <th style="width:24%;">Title</th>
@@ -70,21 +82,60 @@
                         <tr>
                             <td><a href="{{ item.url }}" target="_blank" rel="noopener noreferrer">{{ item.title }}</a></td>
                             <td>{{ item.description }}</td>
-                            <td>{{ item.date }}</td>
+                            <td>{{ item.display_date }}</td>
                             <td>{{ item.source }}</td>
                             <td>
-                                <span class="score-badge">{{ item.scores.environment }}</span>
-                                <span class="score-badge">{{ item.scores.social }}</span>
-                                <span class="score-badge">{{ item.scores.governance }}</span>
-                                <span class="score-badge" style="background:#e0ffe4; color:#0b8043;">{{ item.scores.overall }}</span>
+                                <span class="score-badge" data-env="{{ item.scores.environment }}">{{ item.scores.environment }}</span>
+                                <span class="score-badge" data-soc="{{ item.scores.social }}">{{ item.scores.social }}</span>
+                                <span class="score-badge" data-gov="{{ item.scores.governance }}">{{ item.scores.governance }}</span>
+                                <span class="score-badge" data-overall="{{ item.scores.overall }}" style="background:#e0ffe4; color:#0b8043;">{{ item.scores.overall }}</span>
                             </td>
+                            <td style="display:none;" data-date="{{ item.date }}"></td>
                         </tr>
                     {% endfor %}
                     </tbody>
                 </table>
             </div>
+            <script>
+                (function() {
+                    const sortSelect = document.getElementById('sortBy');
+                    const table = document.getElementById('riskTable');
+                    const tbody = table.querySelector('tbody');
+
+                    sortSelect.addEventListener('change', function() {
+                        const sortBy = this.value;
+                        const rows = Array.from(tbody.querySelectorAll('tr'));
+
+                        rows.sort((a, b) => {
+                            let valA, valB;
+
+                            if (sortBy === 'date') {
+                                const dateA = a.querySelector('[data-date]').getAttribute('data-date') || '';
+                                const dateB = b.querySelector('[data-date]').getAttribute('data-date') || '';
+                                return dateB.localeCompare(dateA);
+                            } else if (sortBy === 'overall') {
+                                valA = parseFloat(a.querySelector('[data-overall]').getAttribute('data-overall')) || 0;
+                                valB = parseFloat(b.querySelector('[data-overall]').getAttribute('data-overall')) || 0;
+                            } else if (sortBy === 'environment') {
+                                valA = parseFloat(a.querySelector('[data-env]').getAttribute('data-env')) || 0;
+                                valB = parseFloat(b.querySelector('[data-env]').getAttribute('data-env')) || 0;
+                            } else if (sortBy === 'social') {
+                                valA = parseFloat(a.querySelector('[data-soc]').getAttribute('data-soc')) || 0;
+                                valB = parseFloat(b.querySelector('[data-soc]').getAttribute('data-soc')) || 0;
+                            } else if (sortBy === 'governance') {
+                                valA = parseFloat(a.querySelector('[data-gov]').getAttribute('data-gov')) || 0;
+                                valB = parseFloat(b.querySelector('[data-gov]').getAttribute('data-gov')) || 0;
+                            }
+
+                            return valB - valA;
+                        });
+
+                        rows.forEach(row => tbody.appendChild(row));
+                    });
+                })();
+            </script>
         {% else %}
-            <p>No ESG-specific news items found in the last three months.</p>
+            <p>No ESG-specific news items found across the last {{ result.search_window_days }} days (≈2 years).</p>
         {% endif %}
     </section>
 {% endif %}

@@ -8,10 +8,16 @@ from typing import Any, Dict, List, Tuple
 from django.conf import settings
 from django.core.cache import cache
 
-from .clients import fetch_articles
+from .clients import LOOKBACK_DAYS, fetch_articles
 from .exceptions import ESGServiceError
 from .keywords import ESG_KEYWORDS
-from .utils import detect_esg_aspects, isoformat, make_cache_key, normalize_company_name
+from .utils import (
+    detect_esg_aspects,
+    isoformat,
+    make_cache_key,
+    normalize_company_name,
+    safe_parse_datetime,
+)
 
 try:
     from openai import OpenAI
@@ -59,6 +65,7 @@ class ESGService:
             'overall_score': analysis.get('overall_score', 0),
             'items': analysis.get('items', []),
             'total_items': len(analysis.get('items', [])),
+            'search_window_days': LOOKBACK_DAYS,
         }
 
     def _fetch_company_overview(self, company_name: str) -> str:
@@ -118,6 +125,7 @@ class ESGService:
             raise ESGServiceError(f'Failed to parse OpenAI ESG analysis: {exc}') from exc
 
         items = [self._normalize_item_structure(item) for item in parsed.get('items', [])]
+        items = self._sort_items_by_score(items)
         overall_score = parsed.get('overall_score')
         if overall_score is None:
             overall_score = self._compute_overall_score(items)
@@ -137,11 +145,13 @@ class ESGService:
             for aspect in aspects:
                 scores[aspect] = base_score
             overall = self._calculate_weighted_score(scores)
+            date_iso = isoformat(article.get('published_at')) if article.get('published_at') else None
             items.append(
                 {
                     'title': article.get('title'),
                     'description': article.get('description'),
-                    'date': isoformat(article.get('published_at')) if article.get('published_at') else None,
+                    'date': date_iso,
+                    'display_date': self._format_display_date(date_iso),
                     'source': article.get('source'),
                     'url': article.get('url'),
                     'scores': {
@@ -153,6 +163,7 @@ class ESGService:
                 }
             )
 
+        items = self._sort_items_by_score(items)
         overall_score = self._compute_overall_score(items)
         return {'items': items, 'overall_score': overall_score}
 
@@ -175,6 +186,7 @@ class ESGService:
             'title': item.get('title', ''),
             'description': item.get('description', ''),
             'date': date_value,
+            'display_date': self._format_display_date(date_value),
             'source': item.get('source'),
             'url': item.get('url'),
             'scores': normalized_scores,
@@ -204,6 +216,22 @@ class ESGService:
         except (TypeError, ValueError):
             return default
         return max(0.0, min(100.0, number))
+
+    def _sort_items_by_score(self, items: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        return sorted(
+            items,
+            key=lambda item: item.get('scores', {}).get('overall', 0),
+            reverse=True,
+        )
+
+    def _format_display_date(self, value: Any) -> str:
+        if isinstance(value, datetime):
+            dt = value
+        else:
+            dt = safe_parse_datetime(value) if value else None
+        if not dt:
+            return value or 'N/A'
+        return dt.strftime('%b %d, %Y')
 
     def _openai_available(self) -> bool:
         return bool(OpenAI and settings.OPENAI_API_KEY)
