@@ -2,6 +2,8 @@
 
 A Django-based web application for real-time Environmental, Social, and Governance (ESG) risk analysis of companies using AI-powered web search and scoring.
 
+![ESG Risk Insight Dashboard](rsgui.png)
+
 ## Overview
 
 ESG Risk Insight fetches and analyzes ESG-related news items for any company over the past 2 years, providing:
